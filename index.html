@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZZS Photography — 用镜头捕捉永恒</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: #2c2c2c;
+            background: #fafafa;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        a { text-decoration: none; color: inherit; }
+        img { display: block; max-width: 100%; }
+        ul { list-style: none; }
+
+        /* ===== Navigation ===== */
+        .nav {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            padding: 20px 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.4s, padding 0.4s, box-shadow 0.4s;
+        }
+        .nav.scrolled {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 14px 60px;
+            box-shadow: 0 2px 30px rgba(0,0,0,0.08);
+        }
+        .nav-logo {
+            font-size: 1.6rem; font-weight: 700; letter-spacing: 3px;
+            color: #fff; transition: color 0.4s;
+        }
+        .nav.scrolled .nav-logo { color: #1a1a1a; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a {
+            font-size: 0.9rem; font-weight: 500; letter-spacing: 2px;
+            text-transform: uppercase; color: #fff;
+            position: relative; transition: color 0.4s;
+        }
+        .nav.scrolled .nav-links a { color: #1a1a1a; }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 0; height: 1.5px; background: currentColor;
+            transition: width 0.35s ease;
+        }
+        .nav-links a:hover::after { width: 100%; }
+        .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; z-index: 1001; }
+        .hamburger span {
+            width: 28px; height: 2px; background: #fff; border-radius: 2px;
+            transition: all 0.35s;
+        }
+        .nav.scrolled .hamburger span { background: #1a1a1a; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        /* ===== Hero ===== */
+        .hero {
+            height: 100vh; min-height: 700px;
+            background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: url('https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=1920&q=80') center/cover no-repeat;
+            opacity: 0.35;
+            animation: heroZoom 20s ease-in-out infinite alternate;
+        }
+        @keyframes heroZoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+        .hero::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.6) 100%);
+        }
+        .hero-content {
+            position: relative; z-index: 1; text-align: center; color: #fff;
+            max-width: 800px; padding: 0 30px;
+        }
+        .hero-content .tag {
+            display: inline-block; font-size: 0.8rem; letter-spacing: 5px;
+            text-transform: uppercase; padding: 10px 30px;
+            border: 1px solid rgba(255,255,255,0.4); border-radius: 50px;
+            margin-bottom: 35px;
+        }
+        .hero-content h1 {
+            font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 200; line-height: 1.15;
+            letter-spacing: 6px;
+        }
+        .hero-content h1 strong { font-weight: 600; }
+        .hero-content .subtitle {
+            font-size: 1.15rem; font-weight: 300; letter-spacing: 2px;
+            margin-top: 24px; opacity: 0.8;
+        }
+        .scroll-indicator {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            z-index: 1; display: flex; flex-direction: column; align-items: center;
+            gap: 10px; color: rgba(255,255,255,0.7); font-size: 0.7rem;
+            letter-spacing: 3px; text-transform: uppercase; animation: bounce 2s infinite;
+        }
+        .scroll-indicator .line { width: 1px; height: 40px; background: rgba(255,255,255,0.4); }
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+
+        /* ===== Section Common ===== */
+        section { padding: 120px 60px; }
+        .section-tag {
+            font-size: 0.75rem; letter-spacing: 4px; text-transform: uppercase;
+            color: #b8936b; margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; letter-spacing: 2px;
+            margin-bottom: 20px; color: #1a1a1a;
+        }
+        .section-line { width: 60px; height: 2px; background: #b8936b; margin-bottom: 50px; }
+
+        /* ===== About ===== */
+        #about {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+            align-items: center; background: #fff;
+        }
+        .about-image {
+            position: relative;
+        }
+        .about-image img {
+            width: 100%; height: 550px; object-fit: cover; border-radius: 4px;
+            box-shadow: 30px 30px 0 rgba(184,147,107,0.15);
+        }
+        .about-image::before {
+            content: ''; position: absolute; top: -20px; left: -20px;
+            width: 120px; height: 120px; border: 2px solid #b8936b;
+            border-right: none; border-bottom: none; z-index: -1;
+        }
+        .about-text .highlight {
+            font-size: 1.1rem; font-weight: 400; color: #b8936b;
+            letter-spacing: 1px; margin-bottom: 24px;
+        }
+        .about-text p {
+            color: #555; margin-bottom: 18px; font-size: 0.95rem;
+        }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 40px; }
+        .stat { text-align: center; }
+        .stat-number { font-size: 2.5rem; font-weight: 200; color: #b8936b; letter-spacing: 2px; }
+        .stat-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-top: 6px; }
+
+        /* ===== Portfolio ===== */
+        #portfolio { background: #fafafa; }
+        .portfolio-header { text-align: center; }
+        .portfolio-header .section-line { margin-left: auto; margin-right: auto; }
+        .filter-bar {
+            display: flex; justify-content: center; gap: 20px; margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase;
+            padding: 8px 24px; border: 1px solid #ddd; border-radius: 50px;
+            background: transparent; color: #888; cursor: pointer;
+            transition: all 0.35s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #b8936b; border-color: #b8936b; color: #fff;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+        .gallery-item {
+            position: relative; border-radius: 4px; overflow: hidden;
+            cursor: pointer; aspect-ratio: 4 / 3;
+        }
+        .gallery-item img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .gallery-item:hover img { transform: scale(1.06); }
+        .gallery-item .overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 30px; opacity: 0; transition: opacity 0.4s;
+        }
+        .gallery-item:hover .overlay { opacity: 1; }
+        .overlay h3 { color: #fff; font-size: 1.2rem; font-weight: 500; letter-spacing: 1px; }
+        .overlay span { color: rgba(255,255,255,0.7); font-size: 0.8rem; letter-spacing: 2px; margin-top: 4px; }
+
+        /* ===== Services ===== */
+        #services { background: #fff; text-align: center; }
+        #services .section-line { margin-left: auto; margin-right: auto; }
+        .services-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+            margin-top: 60px; text-align: left;
+        }
+        .service-card {
+            padding: 50px 35px; border-radius: 4px;
+            transition: all 0.4s; border: 1px solid transparent;
+        }
+        .service-card:hover {
+            border-color: #eee; box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+            transform: translateY(-4px);
+        }
+        .service-icon { font-size: 2.5rem; margin-bottom: 24px; }
+        .service-card h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 14px; }
+        .service-card p { color: #777; font-size: 0.9rem; line-height: 1.8; }
+
+        /* ===== Testimonials ===== */
+        #testimonials {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff; text-align: center;
+        }
+        #testimonials .section-tag { color: #d4b896; }
+        #testimonials .section-title { color: #fff; }
+        #testimonials .section-line { background: #d4b896; margin-left: auto; margin-right: auto; }
+        .testimonials-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+            margin-top: 60px;
+        }
+        .testimonial {
+            background: rgba(255,255,255,0.05); padding: 40px 30px; border-radius: 4px;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08);
+        }
+        .testimonial .quote { font-size: 0.9rem; line-height: 1.8; opacity: 0.85; font-style: italic; margin-bottom: 24px; }
+        .testimonial .author { font-size: 0.85rem; letter-spacing: 2px; color: #d4b896; }
+        .testimonial .role { font-size: 0.75rem; opacity: 0.5; margin-top: 4px; }
+
+        /* ===== Contact ===== */
+        #contact { background: #fafafa; }
+        .contact-wrapper {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+            max-width: 1100px; margin: 0 auto;
+        }
+        .contact-info h3 { font-size: 1.3rem; font-weight: 500; letter-spacing: 1px; margin-bottom: 18px; }
+        .contact-info p { color: #666; font-size: 0.9rem; margin-bottom: 30px; }
+        .contact-detail { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; color: #555; font-size: 0.9rem; }
+        .contact-detail .icon { font-size: 1.3rem; }
+        .social-links { display: flex; gap: 20px; margin-top: 30px; }
+        .social-links a {
+            width: 48px; height: 48px; border-radius: 50%; border: 1px solid #ddd;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.35s; color: #888;
+        }
+        .social-links a:hover { background: #b8936b; border-color: #b8936b; color: #fff; }
+        .contact-form { display: flex; flex-direction: column; gap: 18px; }
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%; padding: 16px 20px; border: 1px solid #e0e0e0;
+            border-radius: 4px; font-size: 0.9rem; font-family: inherit;
+            background: #fff; transition: border-color 0.35s; outline: none;
+        }
+        .contact-form input:focus,
+        .contact-form textarea:focus { border-color: #b8936b; }
+        .contact-form textarea { min-height: 140px; resize: vertical; }
+        .btn {
+            display: inline-block; padding: 16px 45px;
+            font-size: 0.8rem; letter-spacing: 3px; text-transform: uppercase;
+            background: transparent; border: 1px solid #b8936b; color: #b8936b;
+            border-radius: 50px; cursor: pointer; transition: all 0.4s;
+            align-self: flex-start;
+        }
+        .btn:hover { background: #b8936b; color: #fff; }
+        .btn-fill { background: #b8936b; color: #fff; }
+        .btn-fill:hover { background: #a07d5a; border-color: #a07d5a; }
+
+        /* ===== Footer ===== */
+        footer {
+            text-align: center; padding: 50px 60px; background: #1a1a1a;
+            color: rgba(255,255,255,0.5); font-size: 0.8rem; letter-spacing: 2px;
+        }
+
+        /* ===== Mobile Menu ===== */
+        .mobile-menu {
+            position: fixed; inset: 0; background: rgba(10,10,10,0.96);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; z-index: 999; gap: 30px;
+            opacity: 0; visibility: hidden; transition: all 0.4s;
+        }
+        .mobile-menu.active { opacity: 1; visibility: visible; }
+        .mobile-menu a {
+            color: #fff; font-size: 1.4rem; letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* ===== Lightbox ===== */
+        .lightbox {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.35s;
+        }
+        .lightbox.active { opacity: 1; visibility: visible; }
+        .lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 4px; }
+        .lightbox-close {
+            position: absolute; top: 30px; right: 40px;
+            color: #fff; font-size: 2rem; cursor: pointer;
+            background: none; border: none;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 900px) {
+            .nav { padding: 16px 30px; }
+            .nav.scrolled { padding: 12px 30px; }
+            .nav-links { display: none; }
+            .hamburger { display: flex; }
+            section { padding: 80px 30px; }
+            #about { grid-template-columns: 1fr; gap: 50px; }
+            .about-image img { height: 400px; box-shadow: 20px 20px 0 rgba(184,147,107,0.15); }
+            .services-grid { grid-template-columns: 1fr; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .contact-wrapper { grid-template-columns: 1fr; gap: 50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="nav" id="navbar">
+        <a href="#" class="nav-logo">ZZS</a>
+        <ul class="nav-links">
+            <li><a href="#home">首页</a></li>
+            <li><a href="#about">关于</a></li>
+            <li><a href="#portfolio">作品</a></li>
+            <li><a href="#services">服务</a></li>
+            <li><a href="#testimonials">评价</a></li>
+            <li><a href="#contact">联系</a></li>
+        </ul>
+        <div class="hamburger" id="hamburger">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#home" data-close>首页</a>
+        <a href="#about" data-close>关于</a>
+        <a href="#portfolio" data-close>作品</a>
+        <a href="#services" data-close>服务</a>
+        <a href="#testimonials" data-close>评价</a>
+        <a href="#contact" data-close>联系</a>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <span class="tag">Photographer</span>
+            <h1>ZZS <strong>Photography</strong></h1>
+            <p class="subtitle">用镜头讲述故事 · 以光影雕刻时光</p>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <div class="line"></div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+        <div class="about-image">
+            <img src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&q=80" alt="ZZS 摄影师">
+        </div>
+        <div class="about-text">
+            <span class="section-tag">About Me</span>
+            <h2 class="section-title">我是 ZZS</h2>
+            <div class="section-line"></div>
+            <p class="highlight">一名热爱光影、追逐瞬间的自由摄影师</p>
+            <p>
+                从拿起第一台相机开始，我便踏上了用镜头探索世界的旅程。对我来说，摄影不仅仅是按下快门——它是光与影的诗篇，是时间河流中被凝固的一滴水珠。
+            </p>
+            <p>
+                我专注于<span style="color:#b8936b;">人像摄影</span>、<span style="color:#b8936b;">婚礼纪实</span>与<span style="color:#b8936b;">风光摄影</span>，足迹遍布中国大江南北，也曾远赴冰岛、新西兰、日本等地追寻最美的光线。每一张照片背后，都有一个独一无二的故事。
+            </p>
+            <p>
+                我相信最好的照片不是"拍出来的"，而是在对的时刻、对的光线下，自然发生的。我的工作，就是让自己在那里，然后等待那个瞬间。
+            </p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" data-count="8">0</div>
+                    <div class="stat-label">年经验</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" data-count="500">0</div>
+                    <div class="stat-label">+ 拍摄场次</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" data-count="12">0</div>
+                    <div class="stat-label">奖项荣誉</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio -->
+    <section id="portfolio">
+        <div class="portfolio-header">
+            <span class="section-tag">Portfolio</span>
+            <h2 class="section-title">精选作品</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="portrait">人像</button>
+            <button class="filter-btn" data-filter="wedding">婚礼</button>
+            <button class="filter-btn" data-filter="landscape">风光</button>
+            <button class="filter-btn" data-filter="street">街拍</button>
+        </div>
+        <div class="gallery" id="gallery">
+            <!-- Portrait -->
+            <div class="gallery-item" data-category="portrait">
+                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80" alt="人像作品">
+                <div class="overlay"><h3>静谧时光</h3><span>人像摄影</span></div>
+            </div>
+            <div class="gallery-item" data-category="portrait">
+                <img src="https://images.unsplash.com/photo-1514315384763-ba401779410f?w=600&q=80" alt="人像作品">
+                <div class="overlay"><h3>城市光影</h3><span>人像摄影</span></div>
+            </div>
+            <div class="gallery-item" data-category="portrait">
+                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=80" alt="人像作品">
+                <div class="overlay"><h3>优雅瞬间</h3><span>人像摄影</span></div>
+            </div>
+            <!-- Wedding -->
+            <div class="gallery-item" data-category="wedding">
+                <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80" alt="婚礼作品">
+                <div class="overlay"><h3>爱的誓言</h3><span>婚礼纪实</span></div>
+            </div>
+            <div class="gallery-item" data-category="wedding">
+                <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=80" alt="婚礼作品">
+                <div class="overlay"><h3>花漾幸福</h3><span>婚礼纪实</span></div>
+            </div>
+            <div class="gallery-item" data-category="wedding">
+                <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80" alt="婚礼作品">
+                <div class="overlay"><h3>执子之手</h3><span>婚礼纪实</span></div>
+            </div>
+            <!-- Landscape -->
+            <div class="gallery-item" data-category="landscape">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80" alt="风光作品">
+                <div class="overlay"><h3>山峦晨曦</h3><span>风光摄影</span></div>
+            </div>
+            <div class="gallery-item" data-category="landscape">
+                <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=80" alt="风光作品">
+                <div class="overlay"><h3>秋色如画</h3><span>风光摄影</span></div>
+            </div>
+            <div class="gallery-item" data-category="landscape">
+                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80" alt="风光作品">
+                <div class="overlay"><h3>山河远阔</h3><span>风光摄影</span></div>
+            </div>
+            <!-- Street -->
+            <div class="gallery-item" data-category="street">
+                <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&q=80" alt="街拍作品">
+                <div class="overlay"><h3>霓虹都市</h3><span>街拍摄影</span></div>
+            </div>
+            <div class="gallery-item" data-category="street">
+                <img src="https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=600&q=80" alt="街拍作品">
+                <div class="overlay"><h3>巷陌故事</h3><span>街拍摄影</span></div>
+            </div>
+            <div class="gallery-item" data-category="street">
+                <img src="https://images.unsplash.com/photo-1493397212122-2b85dda8106b?w=600&q=80" alt="街拍作品">
+                <div class="overlay"><h3>雨夜独行</h3><span>街拍摄影</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services">
+        <span class="section-tag">Services</span>
+        <h2 class="section-title">拍摄服务</h2>
+        <div class="section-line"></div>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">📷</div>
+                <h3>个人写真</h3>
+                <p>量身定制拍摄方案，在自然的光影中捕捉你最真实动人的一面。无论是清新文艺还是时尚大片，都能为你打造专属的视觉故事。</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💍</div>
+                <h3>婚礼纪实</h3>
+                <p>以细腻的镜头记录婚礼的每一个珍贵瞬间——从晨光中的准备，到誓词时的泪光，再到舞池里的欢笑。全程跟拍，不留遗憾。</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🏔️</div>
+                <h3>风光旅拍</h3>
+                <p>跟随你踏上旅途，用镜头发掘世界的壮美。从高原雪山到海岛日落，让每一次旅行都成为值得珍藏的视觉日记。</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🏢</div>
+                <h3>商业摄影</h3>
+                <p>为品牌与产品打造高品质视觉内容。涵盖产品静物、空间建筑、企业形象等，精准传递品牌气质与产品质感。</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🎓</div>
+                <h3>摄影教学</h3>
+                <p>开设一对一及小班摄影课程，从基础构图到后期调色，毫无保留地分享我的拍摄技巧与创作理念，助你拍出更好的照片。</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🖼️</div>
+                <h3>后期精修</h3>
+                <p>提供专业的后期调色与精修服务。每一张照片都经过精心打磨，确保色彩、光影与细节达到最佳状态。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials">
+        <span class="section-tag">Testimonials</span>
+        <h2 class="section-title">客户心声</h2>
+        <div class="section-line"></div>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <p class="quote">"ZZS 为我们的婚礼留下了最美的回忆。每一张照片都充满了情感，回看的时候仿佛又回到了那一天。"</p>
+                <p class="author">晓雯 & 明哲</p>
+                <p class="role">婚礼客户</p>
+            </div>
+            <div class="testimonial">
+                <p class="quote">"和 ZZS 合作的个人写真拍摄非常愉快。她很会引导情绪，让平时不怎么拍照的我也能自然放松地面对镜头。"</p>
+                <p class="author">林小姐</p>
+                <p class="role">个人写真客户</p>
+            </div>
+            <div class="testimonial">
+                <p class="quote">"专业、耐心、富有创意。ZZS 为我们品牌拍摄的产品图超出了预期，每一张都精准地传达了我们的品牌理念。"</p>
+                <p class="author">陈总</p>
+                <p class="role">商业合作客户</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+        <span class="section-tag">Contact</span>
+        <h2 class="section-title">与我联系</h2>
+        <div class="section-line"></div>
+        <div class="contact-wrapper">
+            <div class="contact-info">
+                <h3>期待与你的相遇</h3>
+                <p>无论你是想记录人生的重要时刻，还是需要高品质的商业摄影服务，都欢迎随时联系我。让我们一起创造属于你的独特影像。</p>
+                <div class="contact-detail">
+                    <span class="icon">📍</span>
+                    <span>中国 · 上海</span>
+                </div>
+                <div class="contact-detail">
+                    <span class="icon">📧</span>
+                    <span>hello@zzsphotography.com</span>
+                </div>
+                <div class="contact-detail">
+                    <span class="icon">📱</span>
+                    <span>+86 138-xxxx-xxxx</span>
+                </div>
+                <div class="social-links">
+                    <a href="#" title="微信">💬</a>
+                    <a href="#" title="微博">📢</a>
+                    <a href="#" title="小红书">📕</a>
+                    <a href="#" title="Instagram">📸</a>
+                </div>
+            </div>
+            <form class="contact-form" id="contactForm">
+                <input type="text" placeholder="你的名字" required>
+                <input type="email" placeholder="电子邮箱" required>
+                <input type="text" placeholder="拍摄需求（如：个人写真 / 婚礼 / 商业拍摄）">
+                <textarea placeholder="告诉我更多关于你的想法……" required></textarea>
+                <button type="submit" class="btn btn-fill">发送消息</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 ZZS Photography. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightboxClose">&times;</button>
+        <img src="" alt="" id="lightboxImg">
+    </div>
+
+    <script>
+        /* ===== Navbar Scroll Effect ===== */
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 60);
+        });
+
+        /* ===== Mobile Menu ===== */
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+        document.querySelectorAll('[data-close]').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            });
+        });
+
+        /* ===== Portfolio Filter ===== */
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.dataset.filter;
+                galleryItems.forEach(item => {
+                    item.style.display = (filter === 'all' || item.dataset.category === filter) ? 'block' : 'none';
+                });
+            });
+        });
+
+        /* ===== Lightbox ===== */
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lightboxClose = document.getElementById('lightboxClose');
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const imgSrc = item.querySelector('img').src.replace('w=600', 'w=1600');
+                lightboxImg.src = imgSrc;
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+        lightboxClose.addEventListener('click', () => {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        /* ===== Stats Counter Animation ===== */
+        const animateStats = () => {
+            document.querySelectorAll('.stat-number').forEach(el => {
+                const target = +el.dataset.count;
+                const duration = 2000;
+                const start = performance.now();
+                const step = (now) => {
+                    const elapsed = now - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3); // ease-out
+                    el.textContent = Math.floor(target * eased) + (el.dataset.count > 100 ? '+' : '');
+                    if (progress < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            });
+        };
+
+        const aboutObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateStats();
+                    aboutObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        const statsEl = document.querySelector('.stats');
+        if (statsEl) aboutObserver.observe(statsEl);
+
+        /* ===== Contact Form ===== */
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button');
+            const originalText = btn.textContent;
+            btn.textContent = '消息已发送 ✓';
+            btn.style.background = '#4CAF50';
+            btn.style.borderColor = '#4CAF50';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '#b8936b';
+                btn.style.borderColor = '#b8936b';
+                this.reset();
+            }, 2500);
+        });
+
+        /* ===== Smooth reveal on scroll ===== */
+        const revealEls = document.querySelectorAll('.service-card, .testimonial, .gallery-item');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        revealEls.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+            revealObserver.observe(el);
+        });
+    </script>
+</body>
+</html>
